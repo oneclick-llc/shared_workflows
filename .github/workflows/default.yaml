@@ -2,13 +2,49 @@ name: Default pipeline
 on:
   workflow_call:
     inputs:
-      username:
+      ecr_registry:
         required: true
         type: string
-
+      account_id:
+        required: true
+        type: string
+      ecr_repository:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id:
+          required: true
+      aws_secret_access_key:
+          required: true
 jobs:
   example_job:
     name: Pass input and secrets to my-action
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    env:
+      ENV: dev
+      ECR_REGISTRY: ${{ inputs.ecr_registry }}
+      ACCOUNT_ID: ${{ inputs.account_id }}
+      ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+      AWS_REGION: ${{ inputs.aws_region }}
     steps:
-      - run: echo "Hello ${{ inputs.username }}!"
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        with:
+          registries: "${{ env.ACCOUNT_ID }}"
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: build
+        run: docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.tag_version.outputs.new_tag }}" --build-arg ENV=$ENV -f Dockerfile .
+      - name: push image
+        run: docker push "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.tag_version.outputs.new_tag }}"
