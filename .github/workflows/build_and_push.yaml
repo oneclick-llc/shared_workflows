@@ -34,11 +34,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Bump version and push tag
+      - name: Dry run for getting a version
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+          release_branches: main,develop
+          tag_prefix: ""
       - name: Login to Amazon ECR
         id: login-ecr
         with:
@@ -48,3 +51,10 @@ jobs:
         run: docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.tag_version.outputs.new_tag }}" --build-arg ENV=$ENV -f Dockerfile .
       - name: push image
         run: docker push "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.tag_version.outputs.new_tag }}"
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: main,develop
+          tag_prefix: ""
