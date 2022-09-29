@@ -19,6 +19,8 @@ on:
           required: true
       aws_secret_access_key:
           required: true
+      bundle_token:
+          required: false
 jobs:
   example_job:
     name: Pass input and secrets to my-action
@@ -31,7 +33,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
       AWS_REGION: ${{ inputs.aws_region }}
-      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
+      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
