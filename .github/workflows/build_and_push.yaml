@@ -48,9 +48,9 @@ jobs:
           registries: "${{ env.ACCOUNT_ID }}"
         uses: aws-actions/amazon-ecr-login@v1
       - name: build
-        run: docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.tag_version.outputs.new_tag }}" --build-arg ENV=$ENV -f Dockerfile .
+        run: docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.get_tag_version.outputs.new_tag }}" --build-arg ENV=$ENV -f Dockerfile .
       - name: push image
-        run: docker push "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.tag_version.outputs.new_tag }}"
+        run: docker push "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.get_tag_version.outputs.new_tag }}"
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.0
