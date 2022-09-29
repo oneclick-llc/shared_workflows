@@ -52,6 +52,8 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: build
         run: docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.get_tag_version.outputs.new_tag }}" --build-arg ENV=$ENV -f Dockerfile .
+        env:
+          BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
       - name: push image
         run: docker push "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.get_tag_version.outputs.new_tag }}"
       - name: Bump version and push tag
