@@ -14,7 +14,7 @@ on:
       aws_region:
         required: true
         type: string
-      bundled_without:
+      bundle_without:
         required: false
         type: string
     secrets:
