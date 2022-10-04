@@ -24,8 +24,12 @@ on:
           required: true
       bundle_token:
           required: false
+    outputs:
+      tag:
+        description: 'Tag version'
+        value: ${{ build_and_push.outputs.tag }}
 jobs:
-  example_job:
+  build_and_push:
     name: Pass input and secrets to my-action
     runs-on: ubuntu-22.04
     outputs:
