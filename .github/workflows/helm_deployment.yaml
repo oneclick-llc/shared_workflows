@@ -29,7 +29,7 @@ on:
       values_path:
         required: true
         type: string
-      service_vesion:
+      service_version:
         required: true
         type: string
     secrets:
