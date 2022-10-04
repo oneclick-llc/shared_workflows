@@ -1,0 +1,56 @@
+name: Deployment
+on:
+  workflow_call:
+    inputs:
+      ecr_registry:
+        required: true
+        type: string
+      account_id:
+        required: true
+        type: string
+      ecr_repository:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+      bundled_without:
+        required: false
+        type: string
+      cluster_name:
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+      bundle_token:
+        required: false
+jobs:
+  deployment:
+    name: Deployment helm
+    runs-on: ubuntu-22.04
+    env:
+      ENV: dev
+      ECR_REGISTRY: ${{ inputs.ecr_registry }}
+      ACCOUNT_ID: ${{ inputs.account_id }}
+      ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+      AWS_REGION: ${{ inputs.aws_region }}
+      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
+      BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      CLUSTER_NAME: ${{ inputs.cluster_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to Amazon ECR
+        id: login-ecr
+        with:
+          registries: "${{ env.ACCOUNT_ID }}"
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
+      - name: print kubeconfig
+        run: cat ~/.kube/config
