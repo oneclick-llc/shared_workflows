@@ -28,6 +28,8 @@ jobs:
   example_job:
     name: Pass input and secrets to my-action
     runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.get_tag_version.outputs.new_tag }}
     env:
       ENV: dev
       ECR_REGISTRY: ${{ inputs.ecr_registry }}
