@@ -63,7 +63,5 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region $AWS_REGION
-      - name: print kubeconfig
-        run: cat ~/.kube/config
       - name: Helm deployment
         run:  helm upgrade ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} oci://297075912351.dkr.ecr.eu-central-1.amazonaws.com/service --version 0.1.8 --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
