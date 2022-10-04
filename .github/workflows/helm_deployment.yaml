@@ -20,6 +20,18 @@ on:
       cluster_name:
         required: true
         type: string
+      namespace:
+        required: true
+        type: string
+      service_name:
+        required: true
+        type: string
+      values_path:
+        required: true
+        type: string
+      service_vesion:
+        required: true
+        type: string
     secrets:
       aws_access_key_id:
         required: true
@@ -41,7 +53,6 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
-      CLUSTER_NAME: ${{ inputs.cluster_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,6 +62,8 @@ jobs:
           registries: "${{ env.ACCOUNT_ID }}"
         uses: aws-actions/amazon-ecr-login@v1
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
+        run: aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region $AWS_REGION
       - name: print kubeconfig
         run: cat ~/.kube/config
+      - name: Helm deployment
+        run:  helm upgrade ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} oci://297075912351.dkr.ecr.eu-central-1.amazonaws.com/service --version 0.1.8 --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
