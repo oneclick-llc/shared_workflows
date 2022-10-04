@@ -27,7 +27,7 @@ on:
     outputs:
       tag:
         description: 'Tag version'
-        value: ${{ build_and_push.outputs.tag }}
+        value: ${{ jobs.build_and_push.outputs.tag }}
 jobs:
   build_and_push:
     name: Pass input and secrets to my-action
