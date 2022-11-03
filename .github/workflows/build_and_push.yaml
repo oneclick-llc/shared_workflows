@@ -59,7 +59,7 @@ jobs:
         id: login-ecr
         with:
           registries: "${{ env.ACCOUNT_ID }}"
-        uses: aws-actions/amazon-ecr-login@v1.5.2
+        uses: aws-actions/amazon-ecr-login@v1.5.3
       - name: build
         run: |
           docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ steps.get_tag_version.outputs.new_tag }}" --build-arg  ENV=$ENV --build-arg BUNDLE_RUBYGEMS__PKG__GITHUB__COM=$BUNDLE_RUBYGEMS__PKG__GITHUB__COM --build-arg BUNDLE_WITHOUT=$BUNDLE_WITHOUT -f Dockerfile .

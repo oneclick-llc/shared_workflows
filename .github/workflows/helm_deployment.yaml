@@ -60,7 +60,7 @@ jobs:
         id: login-ecr
         with:
           registries: "${{ env.ACCOUNT_ID }}"
-        uses: aws-actions/amazon-ecr-login@v1.5.2
+        uses: aws-actions/amazon-ecr-login@v1.5.3
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region $AWS_REGION
       - name: Helm deployment
