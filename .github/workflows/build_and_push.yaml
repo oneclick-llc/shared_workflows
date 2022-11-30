@@ -1,4 +1,6 @@
 name: Default pipeline
+concurrency:
+  group: ${{ github.workflow }}
 on:
   workflow_call:
     inputs:
