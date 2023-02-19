@@ -40,6 +40,10 @@ on:
         default: "0.1.8"
         required: false
         type: string
+      timeout:
+        default: "5m0s"
+        required: false
+        type: string
     secrets:
       aws_access_key_id:
         required: true
@@ -72,4 +76,4 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region $AWS_REGION
       - name: Helm deployment
-        run:  helm upgrade --install --atomic ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} oci://297075912351.dkr.ecr.eu-central-1.amazonaws.com/${{ inputs.chart_type }} --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
+        run:  helm upgrade --install --atomic --timeout ${{ inputs.timeout }} ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} oci://297075912351.dkr.ecr.eu-central-1.amazonaws.com/${{ inputs.chart_type }} --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
