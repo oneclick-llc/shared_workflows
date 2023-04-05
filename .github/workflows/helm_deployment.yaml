@@ -65,6 +65,7 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      OCI_REGISTRY: ${{ secrets.OCI_REGISTRY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -76,4 +77,4 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region $AWS_REGION
       - name: Helm deployment
-        run:  helm upgrade --install --atomic --timeout ${{ inputs.timeout }} ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} ${{ secrets.OCI_REGISTRY }}/${{ inputs.chart_type }} --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
+        run:  helm upgrade --install --atomic --timeout ${{ inputs.timeout }} ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} ${{ env.OCI_REGISTRY }}/${{ inputs.chart_type }} --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
