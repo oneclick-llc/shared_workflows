@@ -46,7 +46,7 @@ on:
         type: string
     secrets:
       OCI_REGISTRY:
-        required: true
+        required: false
       aws_access_key_id:
         required: true
       aws_secret_access_key:
