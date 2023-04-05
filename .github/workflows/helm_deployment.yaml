@@ -45,7 +45,7 @@ on:
         required: false
         type: string
     secrets:
-      OCI_REGISTRY:
+      oci_registy:
         required: true
       aws_access_key_id:
         required: true
