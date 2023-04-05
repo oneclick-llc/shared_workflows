@@ -65,6 +65,7 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      OCI_REGISTRY: ${{ secrets.OCI_REGISTRY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
