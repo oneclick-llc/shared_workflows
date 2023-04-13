@@ -73,7 +73,7 @@ jobs:
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
       OCI_REGISTRY: ${{ secrets.oci_registry }}
-      NEW_RELIC_API_KEY: ${{ secrets.newrelic_api_key }}
+      NEW_RELIC_API_KEY: 'eu01xx38df607e4862154ca5d0d969af8f8aNRAL'
       NEW_RELIC_DEPLOYMENT_ENTITY_GUID: ${{ inputs.newrelic_guid }}
     steps:
       - name: Checkout
@@ -92,5 +92,5 @@ jobs:
         with:
           version: ${{ inputs.service_version }}
           region: 'EU'
-          apiKey: ${{ secrets.newrelic_api_key }}
+          apiKey: 'eu01xx38df607e4862154ca5d0d969af8f8aNRAL'
           guid: ${{ inputs.newrelic_guid }}
