@@ -78,5 +78,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: main,develop
-          create_annotated_tag: true
           tag_prefix: ""

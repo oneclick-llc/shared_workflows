@@ -94,3 +94,6 @@ jobs:
           region: 'EU'
           apiKey: ${{ secrets.newrelic_api_key }}
           guid: ${{ inputs.newrelic_guid }}
+          deploymentType: 'ROLLING'
+          commit: ${{ github.sha }}
+          changelog: "https://github.com/oneclick-llc/${{ github.repository }}/releases/tag/${{ inputs.service_version }}"
