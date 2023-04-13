@@ -73,6 +73,8 @@ jobs:
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
       OCI_REGISTRY: ${{ secrets.oci_registry }}
+      NEW_RELIC_API_KEY: ${{ secrets.newrelic_api_key }}
+      NEW_RELIC_DEPLOYMENT_ENTITY_GUID: ${{ inputs.newrelic_guid }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
