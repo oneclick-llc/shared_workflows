@@ -44,6 +44,9 @@ on:
         default: "5m0s"
         required: false
         type: string
+      newrelic_guid:
+        required: false
+        type: string
     secrets:
       oci_registry:
         required: true
@@ -52,6 +55,8 @@ on:
       aws_secret_access_key:
         required: true
       bundle_token:
+        required: false
+      newrelic_api_key:
         required: false
 jobs:
   deployment:
