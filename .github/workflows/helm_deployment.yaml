@@ -61,7 +61,7 @@ on:
 jobs:
   deployment:
     name: Deployment helm
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       ENV: dev
       ECR_REGISTRY: ${{ inputs.ecr_registry }}

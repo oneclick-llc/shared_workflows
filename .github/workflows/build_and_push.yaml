@@ -33,7 +33,7 @@ on:
 jobs:
   build_and_push:
     name: Pass input and secrets to my-action
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.get_tag_version.outputs.new_tag }}
     env:
