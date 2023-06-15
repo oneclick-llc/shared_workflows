@@ -4,6 +4,10 @@ concurrency:
 on:
   workflow_call:
     inputs:
+      env:
+        required: false
+        type: string
+        default: dev
       ecr_registry:
         required: true
         type: string
@@ -37,7 +41,7 @@ jobs:
     outputs:
       tag: ${{ steps.get_tag_version.outputs.new_tag }}
     env:
-      ENV: dev
+      ENV: ${{ inputs.env }}
       ECR_REGISTRY: ${{ inputs.ecr_registry }}
       ACCOUNT_ID: ${{ inputs.account_id }}
       ECR_REPOSITORY: ${{ inputs.ecr_repository }}
