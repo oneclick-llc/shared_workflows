@@ -1,10 +1,7 @@
-name: Deployment S3
+name: Deploy S3 static by branch
 on:
   workflow_call:
     inputs:
-      bucket_id:
-        required: true
-        type: string
       source_dir:
         default: "dist"
         required: false
@@ -22,16 +19,40 @@ on:
         required: true
       aws_secret_access_key:
         required: true
+
 jobs:
-  deployment:
-    name: Deployment S3
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'yarn'
+      - name: Install dependencies from lock
+        run: yarn install --immutable
+      - name: Build production bundle
+        run: yarn run build
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: "${{ github.ref_name }}-${{ github.sha }}"
+          path: ${{ inputs.source_dir }}
+
+  deploy:
+    name: Deploy to S3
     runs-on: ubuntu-22.04
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: "${{ github.ref_name }}-${{ github.sha }}"
+
       - uses: shallwefootball/s3-upload-action@master
         with:
           aws_key_id: ${{ secrets.aws_access_key_id }}
