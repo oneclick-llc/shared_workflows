@@ -1,0 +1,36 @@
+name: Deployment S3
+on:
+  workflow_call:
+    inputs:
+      bucket_id:
+        required: true
+        type: string
+      source_dir:
+        default: "dist"
+        required: true
+        type: string
+      timeout:
+        default: "5m0s"
+        required: false
+        type: string
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+jobs:
+  deployment:
+    name: Deployment S3
+    runs-on: ubuntu-22.04
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.aws_access_key_id }}
+          aws_secret_access_key: ${{ secrets.aws_secret_access_key}}
+          aws_bucket: ${{ inputs.bucket_id }}
+          source_dir: ${{ inputs.source_dir }}
