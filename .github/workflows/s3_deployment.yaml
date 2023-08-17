@@ -7,7 +7,11 @@ on:
         type: string
       source_dir:
         default: "dist"
-        required: true
+        required: false
+        type: string
+      destination_dir:
+        default: "" # upload to bucket root
+        required: false
         type: string
       timeout:
         default: "5m0s"
@@ -34,3 +38,4 @@ jobs:
           aws_secret_access_key: ${{ secrets.aws_secret_access_key}}
           aws_bucket: ${{ inputs.bucket_id }}
           source_dir: ${{ inputs.source_dir }}
+          destination_dir: ${{ inputs.destination_dir }}
