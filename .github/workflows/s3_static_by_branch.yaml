@@ -43,7 +43,7 @@ jobs:
 
   deploy:
     needs: build
-    name: Deploy to S3
+    name: Deploy
     runs-on: ubuntu-22.04
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
@@ -54,10 +54,11 @@ jobs:
         with:
           name: "${{ github.ref_name }}-${{ github.sha }}"
 
-      - uses: shallwefootball/s3-upload-action@master
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
         with:
           aws_key_id: ${{ secrets.aws_access_key_id }}
           aws_secret_access_key: ${{ secrets.aws_secret_access_key}}
-          aws_bucket: ${{ inputs.bucket_id }}
+          aws_bucket: ${{ github.ref_name }}
           source_dir: ${{ inputs.source_dir }}
           destination_dir: ${{ inputs.destination_dir }}
