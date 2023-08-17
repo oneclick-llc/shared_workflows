@@ -53,6 +53,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: "${{ github.ref_name }}-${{ github.sha }}"
+          path: ${{ inputs.source_dir }}
 
       - name: Upload to S3
         uses: shallwefootball/s3-upload-action@master
