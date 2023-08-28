@@ -86,14 +86,4 @@ jobs:
         run: aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region $AWS_REGION
       - name: Helm deployment
         run:  helm upgrade --install --atomic --timeout ${{ inputs.timeout }} ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} "$OCI_REGISTRY/${{ inputs.chart_type }}" --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
-      - name: Notify New Relic
-        uses: newrelic/deployment-marker-action@v2.2.0
-        continue-on-error: true
-        with:
-          version: ${{ inputs.service_version }}
-          region: 'EU'
-          apiKey: ${{ secrets.newrelic_api_key }}
-          guid: ${{ inputs.newrelic_guid }}
-          deploymentType: 'ROLLING'
-          commit: ${{ github.sha }}
-          changelog: "https://github.com/${{ github.repository }}/releases/tag/${{ inputs.service_version }}"
+      
