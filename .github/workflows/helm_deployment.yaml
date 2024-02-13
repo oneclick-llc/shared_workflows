@@ -37,7 +37,7 @@ on:
         required: false
         type: string
       chart_version:
-        default: "1.0.0"
+        default: "1.0.1"
         required: false
         type: string
       timeout:
