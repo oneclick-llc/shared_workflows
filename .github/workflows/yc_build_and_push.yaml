@@ -84,5 +84,6 @@ jobs:
           tag_prefix: "${{ inputs.tag_prefix }}"
 
       - name: Drop credentials
+        if: always()
         run: |
           rm -rf ~/.docker
