@@ -70,9 +70,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Init kubeconfig
         run: |
+          mkdir -p ~/.kube
           echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
       - name: Init docker config
         run: |
+          mkdir -p ~/.docker
           echo "$DOCKERCONFIGJSON_B64" | base64 -d > ~/.docker/config
       - name: Helm deployment
         run:  helm upgrade --install --atomic --timeout ${{ inputs.timeout }} ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} "$OCI_REGISTRY/${{ inputs.chart_type }}" --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
