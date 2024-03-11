@@ -68,16 +68,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Init kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
+
       - name: Init docker config
         run: |
           mkdir -p ~/.docker
           echo "$DOCKERCONFIGJSON_B64" | base64 -d > ~/.docker/config.json
           chmod 600 ~/.docker/config.json
+
       - name: Helm deployment
         run:  helm upgrade --install --atomic --timeout ${{ inputs.timeout }} ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} "$OCI_REGISTRY/${{ inputs.chart_type }}" --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
+
+      - name: Drop credentials
+        run: |
+          rm -rf ~/.kube
+          rm -rf ~/.docker
+          
       
