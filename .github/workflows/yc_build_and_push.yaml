@@ -31,9 +31,10 @@ on:
       tag:
         description: 'Tag version'
         value: ${{ jobs.build_and_push.outputs.tag }}
+
 jobs:
   build_and_push:
-    name: Pass input and secrets to my-action
+    name: Build
     runs-on: ubuntu-22.04
     outputs:
       tag: ${{ steps.get_tag_version.outputs.new_tag }}

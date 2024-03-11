@@ -52,7 +52,7 @@ on:
         required: false
 jobs:
   deployment:
-    name: Deployment helm
+    name: Deploy
     runs-on: ubuntu-22.04
     env:
       ENV: dev
