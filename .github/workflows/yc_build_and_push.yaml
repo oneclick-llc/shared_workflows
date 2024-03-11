@@ -11,6 +11,7 @@ on:
       yc_cr_registry:
         required: true
         type: string
+        default: "cr.yandex/crpkd952nntjdt5e7tta"
       yc_cr_repository:
         required: true
         type: string

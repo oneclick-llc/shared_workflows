@@ -1,0 +1,79 @@
+name: Deployment Helm
+on:
+  workflow_call:
+    inputs:
+      yc_cr_registry:
+        required: true
+        type: string
+        default: "cr.yandex/crpkd952nntjdt5e7tta"
+      yc_cr_repository:
+        required: true
+        type: string
+      bundled_without:
+        required: false
+        type: string
+      namespace:
+        required: true
+        type: string
+      service_name:
+        required: true
+        type: string
+      values_path:
+        required: true
+        type: string
+      service_version:
+        required: true
+        type: string
+      chart_type:
+        default: "service"
+        required: false
+        type: string
+      chart_version:
+        default: "1.0.2"
+        required: false
+        type: string
+      timeout:
+        default: "5m0s"
+        required: false
+        type: string
+      newrelic_guid:
+        required: false
+        type: string
+    secrets:
+      oci_registry:
+        required: true
+      oci_dockerconfigjson: # b64 enc
+        required: true
+      kubeconfig: # b64 enc
+        required: true
+      bundle_token:
+        required: false
+      newrelic_api_key:
+        required: false
+jobs:
+  deployment:
+    name: Deployment helm
+    runs-on: ubuntu-22.04
+    env:
+      ENV: dev
+      ECR_REGISTRY: ${{ inputs.ecr_registry }}
+      YC_CR_REGISTRY: ${{ inputs.yc_cr_registry }}
+      YC_CR_REPOSITORY: ${{ inputs.yc_cr_repository }}
+      KUBECONFIG_B64: ${{ secrets.kubeconfig }}
+      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
+      BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      OCI_REGISTRY: ${{ secrets.oci_registry }}
+      DOCKERCONFIGJSON_B64: ${{ secrets.oci_dockerconfigjson }}
+      NEW_RELIC_API_KEY: ${{ secrets.newrelic_api_key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Init kubeconfig
+        run: |
+          echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
+      - name: Init docker config
+        run: |
+          echo "$DOCKERCONFIGJSON_B64" | base64 -d > ~/.docker/config
+      - name: Helm deployment
+        run:  helm upgrade --install --atomic --timeout ${{ inputs.timeout }} ${{ inputs.service_name }} --namespace=${{ inputs.namespace }} "$OCI_REGISTRY/${{ inputs.chart_type }}" --version  ${{ inputs.chart_version }} --values ${{ inputs.values_path }} --set image.tag=${{ inputs.service_version }}
+      
