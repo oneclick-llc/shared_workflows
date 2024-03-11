@@ -59,6 +59,7 @@ jobs:
       - name: Login to Yandex Container Registry
         run: |
           echo "$YC_DOCKERCONFIGJSON" | base64 -d > ~/.docker/config.json
+          chmod 600 ~/.docker/config.json
       - name: Create Docker Builder
         run: docker buildx create --use
       - name: Build and push
