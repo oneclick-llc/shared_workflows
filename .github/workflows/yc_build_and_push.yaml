@@ -18,7 +18,7 @@ on:
       tag_prefix:
         required: false
         type: string
-        default: ""
+        default: "yc-"
       bundle_without:
         required: false
         type: string
