@@ -58,6 +58,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+          lfs: true
       - name: Dry run for getting a version
         id: get_tag_version
         uses: mathieudutour/github-tag-action@v6.1
