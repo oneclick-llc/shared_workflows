@@ -35,6 +35,8 @@ on:
           required: true
       bundle_token:
           required: false
+      git_token:
+          required: false
     outputs:
       tag:
         description: 'Tag version'
@@ -55,12 +57,13 @@ jobs:
       CONTEXT:  ${{ inputs.context }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      GIT_TOKEN: ${{ secrets.git_token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: true
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ env.GIT_TOKEN }}
           lfs: true
       - name: Dry run for getting a version
         id: get_tag_version
