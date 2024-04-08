@@ -57,7 +57,7 @@ jobs:
       CONTEXT:  ${{ inputs.context }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
-      GIT_TOKEN: ${{ secrets.git_token }}
+      GIT_TOKEN: ${{ secrets.git_token || github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
