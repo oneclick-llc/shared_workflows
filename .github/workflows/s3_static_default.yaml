@@ -13,6 +13,10 @@ on:
         default: "" # upload to bucket root
         required: false
         type: string
+      endpoint:
+        default: "https://s3.eu-central-1.amazonaws.com"
+        required: false
+        type: string
       timeout:
         default: "5m0s"
         required: false
@@ -66,3 +70,4 @@ jobs:
           aws_bucket: ${{ inputs.destination_bucket }}
           source_dir: ${{ inputs.source_dir }}
           destination_dir: ${{ inputs.destination_dir }}
+          endpoint: ${{ inputs.endpoint }}
