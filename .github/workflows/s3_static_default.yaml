@@ -2,6 +2,10 @@ name: Deploy S3 static - default
 on:
   workflow_call:
     inputs:
+      env_file:
+        default: ".env.development"
+        required: false
+        type: string
       source_dir:
         default: "dist"
         required: false
@@ -40,6 +44,8 @@ jobs:
           cache: 'yarn'
       - name: Install dependencies from lock
         run: yarn install --immutable
+      - name: Copy env file to .env if provided
+        run: touch ${{ inputs.env_file }} && cp ${{ inputs.env_file }} .env && cat .env
       - name: Build production bundle
         run: yarn run build
       - name: Archive production artifacts
