@@ -38,15 +38,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set Node.js 18.x
+        if: ${{ hashFiles('yarn.lock') != '' }}
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: 'yarn'
       - name: Install dependencies from lock
+        if: ${{ hashFiles('yarn.lock') != '' }}
         run: yarn install --immutable
       - name: Copy env file to .env if provided
+        if: ${{ hashFiles('package.json') != '' }}
         run: touch ${{ inputs.env_file }} && cp ${{ inputs.env_file }} .env && cat .env
       - name: Build production bundle
+        if: ${{ hashFiles('package.json') != '' }}
         run: yarn run build
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
