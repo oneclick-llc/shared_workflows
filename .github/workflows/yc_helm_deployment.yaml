@@ -2,13 +2,6 @@ name: Deployment Helm
 on:
   workflow_call:
     inputs:
-      yc_cr_registry:
-        required: true
-        type: string
-        default: "cr.yandex/crpkd952nntjdt5e7tta"
-      yc_cr_repository:
-        required: true
-        type: string
       bundled_without:
         required: false
         type: string
@@ -56,9 +49,6 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       ENV: dev
-      ECR_REGISTRY: ${{ inputs.ecr_registry }}
-      YC_CR_REGISTRY: ${{ inputs.yc_cr_registry }}
-      YC_CR_REPOSITORY: ${{ inputs.yc_cr_repository }}
       KUBECONFIG_B64: ${{ secrets.kubeconfig }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
