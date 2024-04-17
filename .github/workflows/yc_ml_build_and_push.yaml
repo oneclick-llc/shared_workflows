@@ -1,0 +1,124 @@
+name: Default yandex pipeline
+concurrency:
+  group: ${{ github.workflow }}
+on:
+  workflow_call:
+    inputs:
+      env:
+        required: false
+        type: string
+        default: dev
+      yc_cr_registry:
+        required: true
+        type: string
+        default: "cr.yandex/crpkd952nntjdt5e7tta"
+      yc_cr_repository:
+        required: true
+        type: string
+      tag_prefix:
+        required: false
+        type: string
+        default: "yc-"
+      bundle_without:
+        required: false
+        type: string
+      dockerfile:
+        required: false
+        type: string
+        default: "./Dockerfile"
+      context:
+        required: false
+        type: string
+        default: "."
+    secrets:
+      dockerconfigjson: # b64 enc
+          required: true
+      bundle_token:
+          required: false
+      git_token:
+          required: false
+      yndx_access_key_id:
+          required: false
+      yndx_secret_access_key:
+          required: false
+    outputs:
+      tag:
+        description: 'Tag version'
+        value: ${{ jobs.build_and_push.outputs.tag }}
+
+jobs:
+  build_and_push:
+    name: Build
+    runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.get_tag_version.outputs.new_tag }}
+    env:
+      ENV: ${{ inputs.env }}
+      YC_CR_REGISTRY: ${{ inputs.yc_cr_registry }}
+      YC_CR_REPOSITORY: ${{ inputs.yc_cr_repository }}
+      YC_DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
+      DOCKERFILE: ${{ inputs.dockerfile }}
+      CONTEXT:  ${{ inputs.context }}
+      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
+      BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      GIT_TOKEN: ${{ secrets.git_token || github.token }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.yndx_access_key_id}}
+      AWS_SECRET_ACCESS_KEY:  ${{ secrets.yndx_secret_access_key }}
+      AWS_REGION: "ru-central1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ env.GIT_TOKEN }}
+          lfs: true
+      - name: Dry run for getting a version
+        id: get_tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+          release_branches: main,develop
+          tag_prefix: "${{ inputs.tag_prefix }}"
+      - name: Login to Yandex Container Registry
+        run: |
+          echo "$YC_DOCKERCONFIGJSON" | base64 -d > ~/.docker/config.json
+          chmod 600 ~/.docker/config.json
+      - name: Copy retouch GPU models from s3
+        run: |
+          aws --endpoint-url=https://storage.yandexcloud.net s3 cp --recursive s3://looky-ml-filters-retouch-face-gpu/ server/
+          ls -lah server/
+      - name: Create Docker Builder
+        run: docker buildx create --use
+      -
+        # Setting up Docker Buildx with docker-container driver is required
+        # at the moment to be able to use a subdirectory with Git context
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: "${{ env.CONTEXT }}"
+          file: "${{ env.DOCKERFILE }}"
+          push: true
+          tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}"
+          build-args: |
+            ENV=${{ env.ENV }}
+            BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
+            APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
+            BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: main,develop
+          tag_prefix: "${{ inputs.tag_prefix }}"
+
+      - name: Drop credentials
+        if: always()
+        run: |
+          rm -rf ~/.docker
