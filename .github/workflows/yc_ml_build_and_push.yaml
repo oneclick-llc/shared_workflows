@@ -102,28 +102,17 @@ jobs:
         run: |
           aws --endpoint-url=https://storage.yandexcloud.net s3 cp --recursive s3://${{ env.AWS_BUCKET }}/ server/
           ls -lah server/
-      - name: Create Docker Builder
-        run: docker buildx create --use
-      -
-        # Setting up Docker Buildx with docker-container driver is required
-        # at the moment to be able to use a subdirectory with Git context
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
+      - uses: int128/kaniko-action@v1
         with:
-          context: "${{ env.CONTEXT }}"
-          file: "${{ env.DOCKERFILE }}"
           push: true
           tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}"
+          context: "${{ env.CONTEXT }}"
+          file: "${{ env.DOCKERFILE }}"
           build-args: |
             ENV=${{ env.ENV }}
             BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
             APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
@@ -131,7 +120,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: main,develop
           tag_prefix: "${{ inputs.tag_prefix }}"
-
       - name: Drop credentials
         if: always()
         run: |
