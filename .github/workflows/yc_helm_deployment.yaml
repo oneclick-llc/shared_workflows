@@ -65,11 +65,11 @@ jobs:
           echo "$KUBECONFIG_B64" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
-      - name: Init docker config
-        run: |
-          mkdir -p ~/.docker
-          echo "$DOCKERCONFIGJSON_B64" | base64 -d > ~/.docker/config.json
-          chmod 600 ~/.docker/config.json
+      - name: Login to Yandex Cloud Container Registry
+        id: login-cr
+        uses: yc-actions/yc-cr-login@v2
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_COMMON_HELM_PULL_SA_JSON }}
 
       #  --atomic
       - name: Helm deployment
