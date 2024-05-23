@@ -36,9 +36,11 @@ on:
       oci_registry:
         required: true
       oci_dockerconfigjson: # b64 enc
-        required: true
+        required: false
       kubeconfig: # b64 enc
         required: true
+      sa_json:
+        required: false
       bundle_token:
         required: false
       newrelic_api_key:
@@ -55,6 +57,7 @@ jobs:
       OCI_REGISTRY: ${{ secrets.oci_registry }}
       DOCKERCONFIGJSON_B64: ${{ secrets.oci_dockerconfigjson }}
       NEW_RELIC_API_KEY: ${{ secrets.newrelic_api_key }}
+      YC_COMMON_HELM_PULL_SA_JSON: ${{ secrets.sa_json }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
