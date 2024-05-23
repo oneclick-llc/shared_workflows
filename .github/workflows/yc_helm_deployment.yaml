@@ -69,7 +69,7 @@ jobs:
         id: login-cr
         uses: yc-actions/yc-cr-login@v2
         with:
-          yc-sa-json-credentials: ${{ secrets.YC_COMMON_HELM_PULL_SA_JSON }}
+          yc-sa-json-credentials: "$YC_COMMON_HELM_PULL_SA_JSON"
 
       #  --atomic
       - name: Helm deployment
