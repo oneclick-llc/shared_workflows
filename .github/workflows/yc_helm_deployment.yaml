@@ -40,7 +40,7 @@ on:
       kubeconfig: # b64 enc
         required: true
       sa_json:
-        required: false
+        required: true
       bundle_token:
         required: false
       newrelic_api_key:
