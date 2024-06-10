@@ -65,6 +65,7 @@ jobs:
           dry_run: true
           release_branches: main,develop
           tag_prefix: "${{ inputs.tag_prefix }}"
+          fetch_all_tags: true
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1.5.3
@@ -92,3 +93,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: main,develop
           tag_prefix: "${{ inputs.tag_prefix }}"
+          fetch_all_tags: true
