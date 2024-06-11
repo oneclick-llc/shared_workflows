@@ -27,6 +27,10 @@ on:
       bundle_without:
         required: false
         type: string
+      build_args:
+        required: false
+        type: string
+        default: ''
     secrets:
       aws_access_key_id:
           required: true
@@ -84,6 +88,7 @@ jobs:
             BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
             APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
+            ${{ inputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Bump version and push tag
