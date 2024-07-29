@@ -30,6 +30,10 @@ on:
         required: false
         type: string
         default: "."
+      build_args:
+        required: false
+        type: string
+        default: ''
     secrets:
       dockerconfigjson: # b64 enc
           required: true
@@ -88,6 +92,7 @@ jobs:
             BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
             APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
+            ${{ inputs.build_args }}
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
