@@ -41,6 +41,8 @@ on:
           required: false
       git_token:
           required: false
+      npm_package_token:
+        required: false
     outputs:
       tag:
         description: 'Tag version'
@@ -62,6 +64,7 @@ jobs:
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
       GIT_TOKEN: ${{ secrets.git_token || github.token }}
+      NPM_PACKAGE_TOKEN: ${{ secrets.npm_package_token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -92,6 +95,7 @@ jobs:
             BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
             APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
+            NPM_PACKAGE_TOKEN=${{ env.NPM_PACKAGE_TOKEN }}
             ${{ inputs.build_args }}
       - name: Bump version and push tag
         id: tag_version
