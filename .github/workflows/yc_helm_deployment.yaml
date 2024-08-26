@@ -22,7 +22,7 @@ on:
         required: false
         type: string
       chart_version:
-        default: "1.1.0"
+        default: "1.1.1"
         required: false
         type: string
       timeout:
