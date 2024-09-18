@@ -34,6 +34,10 @@ on:
         required: false
         type: string
         default: ''
+      no_tag:
+        required: false
+        type: boolean
+        default: false
     secrets:
       dockerconfigjson: # b64 enc
         required: true
@@ -65,6 +69,7 @@ jobs:
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
       GIT_TOKEN: ${{ secrets.git_token || github.token }}
       NPM_PACKAGE_TOKEN: ${{ secrets.npm_package_token }}
+      NO_TAG: ${{ inputs.no_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -109,6 +114,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: main,develop
           tag_prefix: "${{ inputs.tag_prefix }}"
+          dry_run: "${{ env.NO_TAG }}"
 
       - name: Drop credentials
         if: always()
