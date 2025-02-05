@@ -36,7 +36,7 @@ jobs:
       - name: Build production bundle
         run: yarn run build
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "${{ github.ref_name }}-${{ github.sha }}"
           path: ${{ inputs.source_dir }}
