@@ -19,6 +19,10 @@ on:
         required: false
         type: string
         default: "yc-"
+      tag_suffix:
+        required: false
+        type: string
+        default: ""
       bundle_without:
         required: false
         type: string
@@ -86,6 +90,9 @@ jobs:
           submodules: true
           token: ${{ env.GIT_TOKEN }}
           lfs: true
+      - name: Get tag suffix
+        id: get_tag_suffix
+        run: echo "::set-output name=new_tag_suffix::${{ inputs.tag_suffix}}"
       - name: Dry run for getting a version
         id: get_tag_version
         uses: mathieudutour/github-tag-action@v6.1
