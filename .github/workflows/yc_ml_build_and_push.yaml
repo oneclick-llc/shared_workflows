@@ -112,7 +112,7 @@ jobs:
       - uses: int128/kaniko-action@v1
         with:
           push: true
-          tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}"
+          tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
           context: "${{ env.CONTEXT }}"
           file: "${{ env.DOCKERFILE }}"
           build-args: |
