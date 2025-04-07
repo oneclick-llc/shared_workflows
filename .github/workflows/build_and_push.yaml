@@ -89,7 +89,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
+          tags: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }},${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}"
           build-args: |
             ENV=${{ env.ENV }}
             BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
