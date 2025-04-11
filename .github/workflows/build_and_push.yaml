@@ -35,6 +35,10 @@ on:
         required: false
         type: string
         default: ''
+      no_tag:
+        required: false
+        type: boolean
+        default: false
     secrets:
       aws_access_key_id:
           required: true
@@ -62,6 +66,7 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      NO_TAG: ${{ inputs.no_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -72,7 +77,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: true
           release_branches: main,develop
-          tag_prefix: "aws-"
+          tag_prefix: "${{ inputs.tag_prefix }}"
           fetch_all_tags: true
       - name: Get tag suffix
         id: get_tag_suffix
@@ -104,5 +109,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: main,develop
-          tag_prefix: "aws-"
+          tag_prefix: "${{ inputs.tag_prefix }}"
           fetch_all_tags: true
+          dry_run: "${{ env.NO_TAG }}"
