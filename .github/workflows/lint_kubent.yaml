@@ -42,7 +42,7 @@ jobs:
           KUBENT_VERSION: ${{ inputs.kubent-version }}
         run: |
           echo "Install kubent ${KUBENT_VERSION}..."
-          curl -sSL "https://github.com/doitintl/kube-no-trouble/releases/download/v${KUBENT_VERSION}/kubent-v${KUBENT_VERSION}-linux-amd64.tar.gz" -o kubent.tar.gz
+          curl -sSL "https://github.com/doitintl/kube-no-trouble/releases/download/${KUBENT_VERSION}/kubent-${KUBENT_VERSION}-linux-amd64.tar.gz" -o kubent.tar.gz
           tar -xzf kubent.tar.gz kubent
           sudo mv kubent /usr/local/bin/kubent
           kubent --version
