@@ -1,0 +1,59 @@
+name: Kubent Check
+
+on:
+  workflow_call:
+    inputs:
+      cluster-name:
+        required: true
+        type: string
+      aws-region:
+        required: false
+        type: string
+        default: 'eu-central-1'
+      kubent-version:
+        required: false
+        type: string
+        default: '0.7.3'
+      kubent-args:
+        required: false
+        type: string
+        default: '--exit-error'
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+
+jobs:
+  check-deprecated-apis:
+    runs-on: ubuntu-24.04
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+      AWS_REGION: ${{ inputs.aws_region }}
+    steps:
+      - name: Update Kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ${{ inputs.aws-region }} --name ${{ inputs.cluster-name }}
+          echo "Kubeconfig updated for cluster ${{ inputs.cluster-name }} in region ${{ inputs.aws-region }}"
+
+      - name: Install kubent
+        env:
+          KUBENT_VERSION: ${{ inputs.kubent-version }}
+        run: |
+          echo "Install kubent ${KUBENT_VERSION}..."
+          curl -sSL "https://github.com/doitintl/kube-no-trouble/releases/download/v${KUBENT_VERSION}/kubent-v${KUBENT_VERSION}-linux-amd64.tar.gz" -o kubent.tar.gz
+          tar -xzf kubent.tar.gz kubent
+          sudo mv kubent /usr/local/bin/kubent
+          kubent --version
+
+      - name: Run kubent
+        run: |
+          echo "Kubent ARGS: ${{ inputs.kubent-args }}"
+          kubent ${{ inputs.kubent-args }}
+
+      - name: Cleanup kubeconfig
+        if: always()
+        run: |
+          echo "Deleting kubeconfig..."
+          rm -f $HOME/.kube/config
