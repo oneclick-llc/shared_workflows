@@ -18,10 +18,10 @@ on:
         required: false
         type: string
         default: '--exit-error'
-      kubeconfig-enable:
+      kubeconfig-type:
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: 'aws'
     secrets:
       aws_access_key_id:
         required: false
@@ -39,13 +39,13 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
     steps:
       - name: Update Kubeconfig AWS
-        if: ${{ inputs.kubeconfig-enable }} != true
+        if: ${{ inputs.kubeconfig-type }} == 'aws'
         run: |
           aws eks update-kubeconfig --region ${{ inputs.aws-region }} --name ${{ inputs.cluster-name }}
           echo "Kubeconfig updated for cluster ${{ inputs.cluster-name }} in region ${{ inputs.aws-region }}"
 
       - name: Update Kubeconfig
-        if: ${{ inputs.kubeconfig-enable }}
+        if: ${{ inputs.kubeconfig-type }} == 'file'
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.kubeconfig }}" > $HOME/.kube/config
