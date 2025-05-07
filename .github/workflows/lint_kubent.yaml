@@ -24,9 +24,9 @@ on:
         default: false
     secrets:
       aws_access_key_id:
-        required: true
+        required: false
       aws_secret_access_key:
-        required: true
+        required: false
       kubeconfig:
         required: false
 
@@ -39,6 +39,7 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
     steps:
       - name: Update Kubeconfig AWS
+        if: !${{ inputs.kubeconfig-enable }}
         run: |
           aws eks update-kubeconfig --region ${{ inputs.aws-region }} --name ${{ inputs.cluster-name }}
           echo "Kubeconfig updated for cluster ${{ inputs.cluster-name }} in region ${{ inputs.aws-region }}"
