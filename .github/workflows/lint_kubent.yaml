@@ -38,13 +38,13 @@ jobs:
       AWS_REGION: ${{ inputs.aws_region }}
     steps:
       - name: Update Kubeconfig AWS
-        if: ${{ inputs.kubeconfig-type }} == 'aws'
+        if: inputs.kubeconfig-type == 'aws'
         run: |
           aws eks update-kubeconfig --region ${{ inputs.aws-region }} --name ${{ inputs.cluster-name }}
           echo "Kubeconfig updated for cluster ${{ inputs.cluster-name }} in region ${{ inputs.aws-region }}"
 
       - name: Update Kubeconfig
-        if: ${{ inputs.kubeconfig-type }} == 'file'
+        if: inputs.kubeconfig-type == 'file'
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.kubeconfig }}" > $HOME/.kube/config
