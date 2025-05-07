@@ -19,9 +19,8 @@ on:
         type: string
         default: '--exit-error'
       kubeconfig-type:
-        required: false
+        required: true
         type: string
-        default: 'aws'
     secrets:
       aws_access_key_id:
         required: false
