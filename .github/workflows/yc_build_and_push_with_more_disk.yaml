@@ -1,0 +1,139 @@
+name: Default yandex pipeline
+concurrency:
+  group: ${{ github.workflow }}
+on:
+  workflow_call:
+    inputs:
+      env:
+        required: false
+        type: string
+        default: dev
+      yc_cr_registry:
+        required: true
+        type: string
+        default: "cr.yandex/crpkd952nntjdt5e7tta"
+      yc_cr_repository:
+        required: true
+        type: string
+      tag_prefix:
+        required: false
+        type: string
+        default: "yc-"
+      tag_suffix:
+        required: false
+        type: string
+        default: ""
+      bundle_without:
+        required: false
+        type: string
+      dockerfile:
+        required: false
+        type: string
+        default: "./Dockerfile"
+      context:
+        required: false
+        type: string
+        default: "."
+      build_args:
+        required: false
+        type: string
+        default: ''
+      no_tag:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      dockerconfigjson: # b64 enc
+        required: true
+      bundle_token:
+        required: false
+      git_token:
+        required: false
+      npm_package_token:
+        required: false
+    outputs:
+      tag:
+        description: 'Tag version'
+        value: ${{ jobs.build_and_push.outputs.tag }}
+
+jobs:
+  build_and_push:
+    name: Build
+    runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.get_tag_version.outputs.new_tag }}
+    env:
+      ENV: ${{ inputs.env }}
+      YC_CR_REGISTRY: ${{ inputs.yc_cr_registry }}
+      YC_CR_REPOSITORY: ${{ inputs.yc_cr_repository }}
+      YC_DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
+      DOCKERFILE: ${{ inputs.dockerfile }}
+      CONTEXT:  ${{ inputs.context }}
+      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
+      BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      GIT_TOKEN: ${{ secrets.git_token || github.token }}
+      NPM_PACKAGE_TOKEN: ${{ secrets.npm_package_token }}
+      NO_TAG: ${{ inputs.no_tag }}
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ env.GIT_TOKEN }}
+          lfs: true
+      - name: Get tag suffix
+        id: get_tag_suffix
+        run: echo "::set-output name=new_tag_suffix::${{ inputs.tag_suffix}}"
+      - name: Dry run for getting a version
+        id: get_tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+          release_branches: main,develop
+          tag_prefix: "${{ inputs.tag_prefix }}"
+      - name: Login to Yandex Container Registry
+        run: |
+          echo "$YC_DOCKERCONFIGJSON" | base64 -d > ~/.docker/config.json
+          chmod 600 ~/.docker/config.json
+      - name: Create Docker Builder
+        run: docker buildx create --use
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
+          context: "${{ env.CONTEXT }}"
+          file: "${{ env.DOCKERFILE }}"
+          build-args: |
+            ENV=${{ env.ENV }}
+            BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
+            APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
+            BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
+            NPM_PACKAGE_TOKEN=${{ env.NPM_PACKAGE_TOKEN }}
+            ${{ inputs.build_args }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: main,develop
+          tag_prefix: "${{ inputs.tag_prefix }}"
+          dry_run: "${{ env.NO_TAG }}"
+
+      - name: Drop credentials
+        if: always()
+        run: |
+          rm -rf ~/.docker
