@@ -43,6 +43,9 @@ jobs:
         with:
           node-version: 18.x
           cache: 'yarn'
+      - name: Enable Corepack
+        if: ${{ hashFiles('yarn.lock') != '' }}
+        run: corepack enable
       - name: Install dependencies from lock
         if: ${{ hashFiles('yarn.lock') != '' }}
         run: yarn install --immutable
