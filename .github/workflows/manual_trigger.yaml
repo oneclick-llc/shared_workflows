@@ -19,6 +19,9 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Checkout repo (required for local action)
+      uses: actions/checkout@v4
+
     - name: Decide continue based on run attempt
       id: set_output
       shell: bash
