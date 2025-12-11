@@ -1,39 +1,34 @@
 name: Manual Trigger
-description: "Allows you to set up a manual trigger for a workflow so subsequent jobs can run later (first run skips, re-run continues)."
-author: "Oneclick-llc"
-branding:
-  icon: "play-circle"
-  color: "blue"
 
-inputs:
-  RUN_NAME:
-    description: "Run name"
-    required: false
-    default: "run-workflow"
+on:
+  workflow_call:
+    inputs:
+      RUN_NAME:
+        required: false
+        type: string
+        default: run-workflow
+    outputs:
+      CONTINUE_JOBS:
+        value: ${{ jobs.manual.outputs.CONTINUE_JOBS }}
 
-outputs:
-  CONTINUE_JOBS:
-    description: "Whether subsequent jobs should run"
-    value: ${{ steps.set_output.outputs.CONTINUE_JOBS }}
+jobs:
+  manual:
+    runs-on: ubuntu-latest
+    outputs:
+      CONTINUE_JOBS: ${{ steps.set_output.outputs.CONTINUE_JOBS }}
+    steps:
+      - uses: actions/checkout@v4
 
-runs:
-  using: composite
-  steps:
-    - name: Checkout repo (required for local action)
-      uses: actions/checkout@v4
-
-    - name: Decide continue based on run attempt
-      id: set_output
-      shell: bash
-      run: |
-        echo "GITHUB_RUN_ATTEMPT=$GITHUB_RUN_ATTEMPT"
-
-        if [ "${GITHUB_RUN_ATTEMPT:-1}" -le 1 ]; then
-          echo "CONTINUE_JOBS=false" >> "$GITHUB_OUTPUT"
-          echo "First run for this release. Build is skipped." >> "$GITHUB_STEP_SUMMARY"
-          echo "Re-run this workflow to continue :recycle:" >> "$GITHUB_STEP_SUMMARY"
-          echo "Pausing before jobs :hourglass:"
-        else
-          echo "CONTINUE_JOBS=true" >> "$GITHUB_OUTPUT"
-          echo "Re-run detected (attempt $GITHUB_RUN_ATTEMPT). Continuing jobs :rocket:" >> "$GITHUB_STEP_SUMMARY"
-        fi
+      - name: Decide continue based on run attempt
+        id: set_output
+        shell: bash
+        run: |
+          echo "GITHUB_RUN_ATTEMPT=${GITHUB_RUN_ATTEMPT}"
+          if [ "${GITHUB_RUN_ATTEMPT:-1}" -le 1 ]; then
+            echo "CONTINUE_JOBS=false" >> "$GITHUB_OUTPUT"
+            echo "First run for this release. Build is skipped." >> "$GITHUB_STEP_SUMMARY"
+            echo "Re-run this workflow to continue :recycle:" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "CONTINUE_JOBS=true" >> "$GITHUB_OUTPUT"
+            echo "Re-run detected (attempt $GITHUB_RUN_ATTEMPT). Continuing jobs :rocket:" >> "$GITHUB_STEP_SUMMARY"
+          fi
