@@ -37,7 +37,7 @@ on:
       build_args:
         required: false
         type: string
-        default: ''
+        default: ""
       no_tag:
         required: false
         type: boolean
@@ -53,7 +53,7 @@ on:
         required: false
     outputs:
       tag:
-        description: 'Tag version'
+        description: "Tag version"
         value: ${{ jobs.build_and_push.outputs.tag }}
 
 jobs:
@@ -68,22 +68,26 @@ jobs:
       YC_CR_REPOSITORY: ${{ inputs.yc_cr_repository }}
       YC_DOCKERCONFIGJSON: ${{ secrets.dockerconfigjson }}
       DOCKERFILE: ${{ inputs.dockerfile }}
-      CONTEXT:  ${{ inputs.context }}
+      CONTEXT: ${{ inputs.context }}
       BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
       BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
       GIT_TOKEN: ${{ secrets.git_token || github.token }}
       NPM_PACKAGE_TOKEN: ${{ secrets.npm_package_token }}
       NO_TAG: ${{ inputs.no_tag }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          submodules: true
+          ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
           token: ${{ env.GIT_TOKEN }}
+          submodules: true
           lfs: true
+
       - name: Get tag suffix
         id: get_tag_suffix
-        run: echo "::set-output name=new_tag_suffix::${{ inputs.tag_suffix}}"
+        run: echo "new_tag_suffix=${{ inputs.tag_suffix}}" >> $GITHUB_OUTPUT
+
       - name: Dry run for getting a version
         id: get_tag_version
         uses: mathieudutour/github-tag-action@v6.1
@@ -92,14 +96,17 @@ jobs:
           dry_run: true
           release_branches: main,develop
           tag_prefix: "${{ inputs.tag_prefix }}"
+
       - name: Login to Yandex Container Registry
         run: |
           echo "$YC_DOCKERCONFIGJSON" | base64 -d > ~/.docker/config.json
           chmod 600 ~/.docker/config.json
+
       - name: Create Docker Builder
         run: docker buildx create --use
+
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
@@ -114,6 +121,7 @@ jobs:
             ${{ inputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
