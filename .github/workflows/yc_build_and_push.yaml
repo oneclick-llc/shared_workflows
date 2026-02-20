@@ -1,6 +1,6 @@
 name: Default yandex pipeline
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.yc_cr_repository }}
 on:
   workflow_call:
     inputs:
