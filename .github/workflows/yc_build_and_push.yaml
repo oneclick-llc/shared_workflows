@@ -51,6 +51,8 @@ on:
         required: false
       npm_package_token:
         required: false
+      sentry_auth_token:
+        required: false
     outputs:
       tag:
         description: "Tag version"
@@ -119,6 +121,8 @@ jobs:
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
             NPM_PACKAGE_TOKEN=${{ env.NPM_PACKAGE_TOKEN }}
             ${{ inputs.build_args }}
+          secrets: |
+            sentry_auth_token=${{ secrets.sentry_auth_token }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
