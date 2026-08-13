@@ -111,6 +111,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          provenance: false
+          sbom: false
           tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
           context: "${{ env.CONTEXT }}"
           file: "${{ env.DOCKERFILE }}"
