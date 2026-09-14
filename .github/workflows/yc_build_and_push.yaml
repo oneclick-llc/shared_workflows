@@ -49,6 +49,8 @@ on:
         required: false
       git_token:
         required: false
+      build_git_token:
+        required: false
       npm_package_token:
         required: false
       sentry_auth_token:
@@ -123,7 +125,9 @@ jobs:
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
             NPM_PACKAGE_TOKEN=${{ env.NPM_PACKAGE_TOKEN }}
             ${{ inputs.build_args }}
+          # AICODE-NOTE: build credentials are opt-in secret mounts, separate from checkout and image layers.
           secrets: |
+            git_read_token=${{ secrets.build_git_token }}
             sentry_auth_token=${{ secrets.sentry_auth_token }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
