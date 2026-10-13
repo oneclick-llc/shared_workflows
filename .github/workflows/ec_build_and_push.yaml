@@ -25,7 +25,7 @@ on:
       tag_prefix:
         required: false
         type: string
-        default: ""
+        default: "yc-"
       tag_suffix:
         required: false
         type: string
