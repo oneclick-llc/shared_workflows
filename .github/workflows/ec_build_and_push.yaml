@@ -1,0 +1,156 @@
+name: Default Harbor pipeline
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.ec_repository }}
+
+on:
+  workflow_call:
+    inputs:
+      env:
+        required: false
+        type: string
+        default: dev
+      ec_registry:
+        required: false
+        type: string
+        default: harbor.looky.one
+      ec_project:
+        # Use looky-prod for production and looky-dev for development.
+        required: false
+        type: string
+        default: looky-dev
+      ec_repository:
+        required: true
+        type: string
+      tag_prefix:
+        required: false
+        type: string
+        default: ""
+      tag_suffix:
+        required: false
+        type: string
+        default: ""
+      bundle_without:
+        required: false
+        type: string
+      dockerfile:
+        required: false
+        type: string
+        default: "./Dockerfile"
+      context:
+        required: false
+        type: string
+        default: "."
+      build_args:
+        required: false
+        type: string
+        default: ""
+      no_tag:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      harbor_password:
+        required: true
+      bundle_token:
+        required: false
+      git_token:
+        required: false
+      build_git_token:
+        required: false
+      npm_package_token:
+        required: false
+      sentry_auth_token:
+        required: false
+    outputs:
+      tag:
+        description: "Tag version"
+        value: ${{ jobs.build_and_push.outputs.tag }}
+
+jobs:
+  build_and_push:
+    name: Build
+    runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.get_tag_version.outputs.new_tag }}
+    env:
+      ENV: ${{ inputs.env }}
+      EC_REGISTRY: ${{ inputs.ec_registry }}
+      EC_PROJECT: ${{ inputs.ec_project }}
+      EC_REPOSITORY: ${{ inputs.ec_repository }}
+      HARBOR_PASSWORD: ${{ secrets.harbor_password }}
+      DOCKERFILE: ${{ inputs.dockerfile }}
+      CONTEXT: ${{ inputs.context }}
+      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.bundle_token }}
+      BUNDLE_WITHOUT: ${{ inputs.bundle_without }}
+      GIT_TOKEN: ${{ secrets.git_token || github.token }}
+      NPM_PACKAGE_TOKEN: ${{ secrets.npm_package_token }}
+      NO_TAG: ${{ inputs.no_tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+          token: ${{ env.GIT_TOKEN }}
+          submodules: true
+          lfs: true
+
+      - name: Get tag suffix
+        id: get_tag_suffix
+        run: echo "new_tag_suffix=${{ inputs.tag_suffix }}" >> "$GITHUB_OUTPUT"
+
+      - name: Dry run for getting a version
+        id: get_tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+          release_branches: main,develop
+          tag_prefix: "${{ inputs.tag_prefix }}"
+
+      - name: Login to Harbor
+        run: |
+          printf '%s' "$HARBOR_PASSWORD" | docker login "$EC_REGISTRY" \
+            --username 'robot$looky-push' \
+            --password-stdin
+
+      - name: Create Docker Builder
+        run: docker buildx create --use
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          provenance: false
+          sbom: false
+          tags: "${{ env.EC_REGISTRY }}/${{ env.EC_PROJECT }}/${{ env.EC_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
+          context: "${{ env.CONTEXT }}"
+          file: "${{ env.DOCKERFILE }}"
+          build-args: |
+            ENV=${{ env.ENV }}
+            BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
+            APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
+            BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
+            NPM_PACKAGE_TOKEN=${{ env.NPM_PACKAGE_TOKEN }}
+            ${{ inputs.build_args }}
+          # Build credentials are opt-in secret mounts, separate from checkout and image layers.
+          secrets: |
+            git_read_token=${{ secrets.build_git_token }}
+            sentry_auth_token=${{ secrets.sentry_auth_token }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_branches: main,develop
+          tag_prefix: "${{ inputs.tag_prefix }}"
+          dry_run: "${{ env.NO_TAG }}"
+
+      - name: Drop credentials
+        if: always()
+        run: |
+          rm -rf ~/.docker
