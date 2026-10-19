@@ -26,6 +26,11 @@ on:
         required: false
         type: string
         default: "yc-"
+      image_tag:
+        description: "Explicit base image tag; ignores tag_prefix, keeps tag_suffix, and skips Git tagging"
+        required: false
+        type: string
+        default: ""
       tag_suffix:
         required: false
         type: string
@@ -72,7 +77,7 @@ jobs:
     name: Build
     runs-on: ubuntu-22.04
     outputs:
-      tag: ${{ steps.get_tag_version.outputs.new_tag }}
+      tag: ${{ inputs.image_tag || steps.get_tag_version.outputs.new_tag }}
     env:
       ENV: ${{ inputs.env }}
       EC_REGISTRY: ${{ inputs.ec_registry }}
@@ -102,6 +107,7 @@ jobs:
 
       - name: Dry run for getting a version
         id: get_tag_version
+        if: ${{ inputs.image_tag == '' }}
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -124,13 +130,13 @@ jobs:
           push: true
           provenance: false
           sbom: false
-          tags: "${{ env.EC_REGISTRY }}/${{ env.EC_PROJECT }}/${{ env.EC_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
+          tags: "${{ env.EC_REGISTRY }}/${{ env.EC_PROJECT }}/${{ env.EC_REPOSITORY }}:${{ inputs.image_tag || steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
           context: "${{ env.CONTEXT }}"
           file: "${{ env.DOCKERFILE }}"
           build-args: |
             ENV=${{ env.ENV }}
             BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
-            APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
+            APP_VERSION=${{ inputs.image_tag || steps.get_tag_version.outputs.new_tag }}
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
             NPM_PACKAGE_TOKEN=${{ env.NPM_PACKAGE_TOKEN }}
             ${{ inputs.build_args }}
@@ -143,6 +149,7 @@ jobs:
 
       - name: Bump version and push tag
         id: tag_version
+        if: ${{ inputs.image_tag == '' }}
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
