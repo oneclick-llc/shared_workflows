@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ""
+      image_tag:
+        description: "Explicit base image tag; ignores tag_prefix, keeps tag_suffix, and skips Git tagging"
+        required: false
+        type: string
+        default: ""
       tag_suffix:
         required: false
         type: string
@@ -57,7 +62,7 @@ jobs:
     name: Pass input and secrets to my-action
     runs-on: ubuntu-22.04
     outputs:
-      tag: ${{ steps.get_tag_version.outputs.new_tag }}
+      tag: ${{ inputs.image_tag || steps.get_tag_version.outputs.new_tag }}
     env:
       ENV: ${{ inputs.env }}
       ECR_REGISTRY: ${{ inputs.ecr_registry }}
@@ -74,6 +79,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Dry run for getting a version
         id: get_tag_version
+        if: ${{ inputs.image_tag == '' }}
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -96,11 +102,11 @@ jobs:
         with:
           context: .
           push: true
-          tags: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }},${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}"
+          tags: "${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ inputs.image_tag || steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }},${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ inputs.image_tag || steps.get_tag_version.outputs.new_tag }}"
           build-args: |
             ENV=${{ env.ENV }}
             BUNDLE_RUBYGEMS__PKG__GITHUB__COM=${{ env.BUNDLE_RUBYGEMS__PKG__GITHUB__COM }}
-            APP_VERSION=${{ steps.get_tag_version.outputs.new_tag }}
+            APP_VERSION=${{ inputs.image_tag || steps.get_tag_version.outputs.new_tag }}
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
             ${{ inputs.build_args }}
           secrets: |
@@ -109,6 +115,7 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Bump version and push tag
         id: tag_version
+        if: ${{ inputs.image_tag == '' }}
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
