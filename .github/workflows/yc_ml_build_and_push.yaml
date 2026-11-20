@@ -75,7 +75,7 @@ jobs:
       AWS_BUCKET: ${{ inputs.aws_bucket }}
     steps:
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@cf1e78c50ca91e757bab3edc229027eebfc07871 # main 2026-11-04 (v2.0.0+3)
         with:
           tool-cache: false
           android: true
@@ -85,7 +85,7 @@ jobs:
           docker-images: true
           swap-storage: true
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
         with:
           submodules: true
           token: ${{ env.GIT_TOKEN }}
@@ -95,7 +95,7 @@ jobs:
         run: echo "::set-output name=new_tag_suffix::${{ inputs.tag_suffix}}"
       - name: Dry run for getting a version
         id: get_tag_version
-        uses: mathieudutour/github-tag-action@v6.1
+        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2 # v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: true
@@ -109,7 +109,7 @@ jobs:
         run: |
           aws --endpoint-url=https://storage.yandexcloud.net s3 cp --recursive s3://${{ env.AWS_BUCKET }}/ server/
           ls -lah server/
-      - uses: int128/kaniko-action@v1
+      - uses: int128/kaniko-action@e0d025ac32874fbd71d63fbfadf84aa87a8088f5 # v1.72.0
         with:
           push: true
           tags: "${{ env.YC_CR_REGISTRY }}/${{ env.YC_CR_REPOSITORY }}:${{ steps.get_tag_version.outputs.new_tag }}${{ steps.get_tag_suffix.outputs.new_tag_suffix }}"
@@ -122,7 +122,7 @@ jobs:
             BUNDLE_WITHOUT=${{ env.BUNDLE_WITHOUT }}
       - name: Bump version and push tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
+        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2 # v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: main,develop

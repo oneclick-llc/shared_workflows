@@ -76,12 +76,12 @@ jobs:
       NEW_RELIC_API_KEY: ${{ secrets.newrelic_api_key }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
       - name: Login to Amazon ECR
         id: login-ecr
         with:
           registries: "${{ env.ACCOUNT_ID }}"
-        uses: aws-actions/amazon-ecr-login@v1.5.3
+        uses: aws-actions/amazon-ecr-login@261a7de32bda11ba01f4d75c4ed6caf3739e54be # v1.5.3
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name ${{ inputs.cluster_name }} --region $AWS_REGION
       - name: Helm deployment
