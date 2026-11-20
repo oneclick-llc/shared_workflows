@@ -24,3 +24,10 @@ the selected base tag, without the suffix.
 Use a workflow ref that includes the `image_tag` input. Release names must be
 valid Docker tags and match the caller's Flux image policy; any prefix conversion
 (for example, `test-` to `prod-`) is the caller's responsibility.
+
+## Secret `npm_token` for BuildKit
+
+`ec_build_and_push.yaml` also mounts the `npm_package_token` secret into the build as the BuildKit secret `npm_token`
+(`RUN --mount=type=secret,id=npm_token ...` in the Dockerfile, read from `/run/secrets/npm_token`), so private
+packages can be installed without leaving the token in image layers. The `NPM_PACKAGE_TOKEN` build argument is kept
+for callers that still use it.
